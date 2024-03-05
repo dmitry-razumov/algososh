@@ -1,0 +1,21 @@
+.control {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.reset {
+  padding-left: 80px;
+}
+
+.input {
+  width: 377px;
+}
+
+.array {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 48px 0 0;
+  padding: 0;
+}
