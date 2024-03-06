@@ -10,6 +10,7 @@ import { SHORT_DELAY_IN_MS } from "../../constants/delays";
 import { TArrayStep, TElement } from "../../types/state-types";
 import { animateStates } from "../../utils/animate-state";
 import { HEAD, TAIL } from "../../constants/element-captions";
+import { useForm } from "../../hooks/useForm";
 
 type TElementQ = TElement & {
   head: boolean,
@@ -20,7 +21,6 @@ type TArrayStepQ = TArrayStep<TElementQ>
 
 export const QueuePage: React.FC = () => {
   const QUEUE_MAX_LEN = 7;
-  const [value, setValue] = useState<string>('');
   const [tail, setTail] = useState<number>(0);
   const [isLoaderEnqueue, setLoaderEnqueue] = useState(false);
   const [isLoaderDequeue, setLoaderDequeue] = useState(false);
@@ -29,11 +29,7 @@ export const QueuePage: React.FC = () => {
   const [stateArray, setStateArray] = useState<TElementQ[]>(Array.from({ length: QUEUE_MAX_LEN },
      (v, index) => ({ value: '', state: ElementStates.Default, 
      head: !index, tail: !index})));
-
-  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    event.preventDefault()
-    setValue(event.target.value)
-  }
+  const {values, handleChange, setValues} = useForm({value: ""})
 
   const getArrayFromQueue = (array: string[], head: number, tail: number): TElementQ[] => {
     let localQueue: TElementQ[] = []
@@ -46,7 +42,7 @@ export const QueuePage: React.FC = () => {
     stepArray.push({array: JSON.parse(JSON.stringify(localQueue))})
   }
 
-  const enqueue = (event: React.FormEvent<HTMLFormElement>) => {
+  const enqueue = (event: React.FormEvent<HTMLFormElement>, value: string) => {
     event.preventDefault()
 
     let stepArray:TArrayStepQ[] = []
@@ -64,7 +60,7 @@ export const QueuePage: React.FC = () => {
       addToStepArray(stepArray, localQueue)
     }
 
-    setValue('');
+    setValues({...values, value: ''});
     animateStates(stepArray, setLoaderEnqueue, setStateArray, SHORT_DELAY_IN_MS)  
   }
 
@@ -94,10 +90,10 @@ export const QueuePage: React.FC = () => {
 
   return (
     <SolutionLayout title="Очередь">
-      <form className={styles.control} onSubmit={enqueue}>
-        <Input isLimitText={true} value={value} maxLength={4} onChange={onChange} extraClass={styles.input} />
+      <form className={styles.control} onSubmit={(e) => enqueue(e, values.value)}>
+        <Input isLimitText={true} value={values.value} name="value" maxLength={4} onChange={handleChange} extraClass={styles.input} />
         <Button type={'submit'} isLoader={isLoaderEnqueue}
-          disabled={!value || isLoaderDequeue || isLoaderClear || tail === QUEUE_MAX_LEN - 1} text="Добавить"/>
+          disabled={!values.value || isLoaderDequeue || isLoaderClear || tail === QUEUE_MAX_LEN - 1} text="Добавить"/>
         <Button type={'button'} isLoader={isLoaderDequeue}
           disabled={!stateArray.length || isLoaderEnqueue || isLoaderClear || queue.isEmpty() } onClick={() => dequeue()} text="Удалить"/>
         <div className={styles.reset}>

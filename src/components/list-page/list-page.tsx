@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import styles from "./list-page.module.css"
 import { Input } from "../ui/input/input";
@@ -12,6 +12,7 @@ import { TArrayStep, TElement} from "../../types/state-types";
 import { animateStates } from "../../utils/animate-state";
 import { createRandomArray } from "../../utils/array";
 import { HEAD, TAIL } from "../../constants/element-captions";
+import { useForm } from "../../hooks/useForm";
 
 type TSmallElement = TElement & {
   type: "top" | "bottom"
@@ -27,8 +28,6 @@ export const ListPage: React.FC = () => {
   const initArray = useMemo( () => {
     return createRandomArray(6, 6, 9999).map(value => value.toString())
   }, [])
-  const [value, setValue] = useState('')
-  const [index, setIndex] = useState<number>(0)
   const [isLoaderPrepend, setLoaderPrepend] = useState(false)
   const [isLoaderAppend, setLoaderAppend] = useState(false)
   const [isLoaderDelFromHead, setLoaderDelFromHead] = useState(false)
@@ -38,16 +37,7 @@ export const ListPage: React.FC = () => {
   const [linkedList, setLinkedList] = useState<LinkedList<string>>(new LinkedList(initArray))
   const [listArray, setListArray] = useState<TElementLL[]>(initArray
     .map((value) => ({value: value, state: ElementStates.Default, smallElement: null})))
-
-  const changeValue = (event: ChangeEvent<HTMLInputElement>) => {
-    event.preventDefault();
-    setValue(event.target.value)
-  }
-
-  const changeIndex = (event: ChangeEvent<HTMLInputElement>) => {
-    event.preventDefault();
-    setIndex(Number(event.target.value))
-  }
+  const {values, handleChange, setValues} = useForm({value: "", index: 0})
 
   const getArrayFromLinkedList = (array: string[]): TElementLL[] => {
     let localListArray: TElementLL[] = [];
@@ -59,7 +49,7 @@ export const ListPage: React.FC = () => {
     stepArray.push({array: JSON.parse(JSON.stringify(localListArray))})
   }
 
-  const prepend = () => {
+  const prepend = (value: string) => {
     let stepArray:TArrayStepLL[] = [];
     let localListArray: TElementLL[] = getArrayFromLinkedList(linkedList.toArray());
 
@@ -76,11 +66,11 @@ export const ListPage: React.FC = () => {
     localListArray[0].state = ElementStates.Default;
     addToStepArray(stepArray, localListArray)
 
-    setValue('');
+    setValues({...values, value: ''});
     animateStates(stepArray, setLoaderPrepend, setListArray, SHORT_DELAY_IN_MS)
   }
 
-  const append = () => {
+  const append = (value: string) => {
     let stepArray:TArrayStepLL[] = [];
     let localListArray: TElementLL[] = getArrayFromLinkedList(linkedList.toArray());
 
@@ -97,7 +87,7 @@ export const ListPage: React.FC = () => {
     localListArray[localListArray.length - 1].state = ElementStates.Default;
     addToStepArray(stepArray, localListArray)
 
-    setValue('');
+    setValues({...values, value: ''});
     animateStates(stepArray, setLoaderAppend, setListArray, SHORT_DELAY_IN_MS)
   }
 
@@ -135,7 +125,7 @@ export const ListPage: React.FC = () => {
     animateStates(stepArray, setLoaderDelFromTail, setListArray, SHORT_DELAY_IN_MS)
   }
 
-  const addByIndex = () => {
+  const addByIndex = (value: string, index: number) => {
     let stepArray:TArrayStepLL[] = [];
     let localListArray: TElementLL[] = getArrayFromLinkedList(linkedList.toArray());
 
@@ -163,12 +153,11 @@ export const ListPage: React.FC = () => {
     localListArray.forEach(element => {element.state = ElementStates.Default});
     addToStepArray(stepArray, localListArray)
 
-    setIndex(0);
-    setValue('');
+    setValues({...values, value: "", index: 0});
     animateStates(stepArray, setLoaderAddByIndex, setListArray, SHORT_DELAY_IN_MS)
   }
 
-  const deleteByIndex = () => {
+  const deleteByIndex = (index: number) => {
     let stepArray:TArrayStepLL[] = [];
     let localListArray: TElementLL[] = getArrayFromLinkedList(linkedList.toArray());
 
@@ -196,29 +185,29 @@ export const ListPage: React.FC = () => {
     localListArray.forEach(element => element.state = ElementStates.Default)
     addToStepArray(stepArray, localListArray)
 
-    setIndex(0);
+    setValues({...values, index: 0});
     animateStates(stepArray, setLoaderDelByIndex, setListArray, SHORT_DELAY_IN_MS)
   }
 
   return (
     <SolutionLayout title="Связный список">
       <div className={styles.grid}>
-        <Input isLimitText={true} value={value} maxLength={4} type={'text'} onChange={changeValue} placeholder={'Введите значение'} 
+        <Input isLimitText={true} name={'value'} value={values.value} maxLength={4} type={'text'} onChange={handleChange} placeholder={'Введите значение'} 
           disabled={isLoaderPrepend || isLoaderAppend || isLoaderDelFromHead || isLoaderDelFromTail || isLoaderAddByIndex || isLoaderDelByIndex}/>
-        <Button type="button" text={'Добавить в head'} isLoader={isLoaderPrepend} onClick={prepend}
-          disabled={!value || isLoaderAppend || isLoaderDelFromHead || isLoaderDelFromTail || isLoaderAddByIndex || isLoaderDelByIndex} />
-        <Button type="button" text={'Добавить в tail'} isLoader={isLoaderAppend} onClick={append}
-          disabled={!value || isLoaderPrepend || isLoaderDelFromHead || isLoaderDelFromTail || isLoaderAddByIndex || isLoaderDelByIndex} />
+        <Button type="button" text={'Добавить в head'} isLoader={isLoaderPrepend} onClick={() => prepend(values.value)}
+          disabled={!values.value || isLoaderAppend || isLoaderDelFromHead || isLoaderDelFromTail || isLoaderAddByIndex || isLoaderDelByIndex} />
+        <Button type="button" text={'Добавить в tail'} isLoader={isLoaderAppend} onClick={() => append(values.value)}
+          disabled={!values.value || isLoaderPrepend || isLoaderDelFromHead || isLoaderDelFromTail || isLoaderAddByIndex || isLoaderDelByIndex} />
         <Button type="button" text={'Удалить из head'} isLoader={isLoaderDelFromHead} onClick={deleteHead}
           disabled={!listArray.length || isLoaderPrepend || isLoaderAppend || isLoaderDelFromTail || isLoaderAddByIndex || isLoaderDelByIndex} />
         <Button type="button" text={'Удалить из tail'} isLoader={isLoaderDelFromTail} onClick={deleteTail}
           disabled={!listArray.length || isLoaderPrepend || isLoaderAppend || isLoaderDelFromHead || isLoaderAddByIndex || isLoaderDelByIndex} />
-        <Input type={'number'} value={index} onChange={changeIndex} placeholder={'Введите индекс'} max={listArray.length - 1} min={0} 
+        <Input type={'number'} name={'index'} value={values.index} onChange={handleChange} placeholder={'Введите индекс'} max={listArray.length - 1} min={0} 
           disabled={isLoaderPrepend || isLoaderAppend || isLoaderDelFromHead || isLoaderDelFromTail || isLoaderAddByIndex || isLoaderDelByIndex}/>
-        <Button type="button" text={'Добавить по индексу'} isLoader={isLoaderAddByIndex} onClick={addByIndex} extraClass={styles.doubleBtn}
-          disabled={!value || isLoaderPrepend || isLoaderAppend || isLoaderDelFromHead || isLoaderDelFromTail || isLoaderDelByIndex} />
-        <Button type="button" text={'Удалить по индексу'} isLoader={isLoaderDelByIndex} onClick={deleteByIndex} extraClass={styles.doubleBtn}
-          disabled={isLoaderPrepend || isLoaderAppend || isLoaderDelFromHead || isLoaderDelFromTail || isLoaderAddByIndex} />
+        <Button type="button" text={'Добавить по индексу'} isLoader={isLoaderAddByIndex} onClick={() => addByIndex(values.value, values.index)} extraClass={styles.doubleBtn}
+          disabled={!values.value || isLoaderPrepend || isLoaderAppend || isLoaderDelFromHead || isLoaderDelFromTail || isLoaderDelByIndex || values.index > listArray.length - 1 || values.index < 0} />
+        <Button type="button" text={'Удалить по индексу'} isLoader={isLoaderDelByIndex} onClick={() => deleteByIndex(values.index)} extraClass={styles.doubleBtn}
+          disabled={isLoaderPrepend || isLoaderAppend || isLoaderDelFromHead || isLoaderDelFromTail || isLoaderAddByIndex || values.index > listArray.length - 1 || values.index < 0} />
       </div>
       <div className={styles.array}>
         {listArray.map((element, index) =>

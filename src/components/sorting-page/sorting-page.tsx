@@ -19,7 +19,8 @@ export const SortingPage: React.FC = () => {
   const [isLoaderAsc, setLoaderAsc] = useState(false)
   const [isLoaderDesc, setLoaderDesc] = useState(false)
   const [isLoaderNewArr, setLoaderNewArr] = useState(false)
-  const [randArray, setRandArray] = useState<TElementS[]>([]);
+  const [randArray, setRandArray] = useState<TElementS[]>(createRandomArray(ARRAY_LEN_MIN, ARRAY_LEN_MAX, ARRAY_NUM_MAX)
+    .map(value => ({value: value, state: ElementStates.Default})));
 
   const doSort = (sortDirection: Direction) => {
     const array = sortingType === SortType.Bubble

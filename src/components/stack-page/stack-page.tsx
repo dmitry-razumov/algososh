@@ -9,21 +9,17 @@ import { SHORT_DELAY_IN_MS } from "../../constants/delays";
 import { Circle } from "../ui/circle/circle";
 import { TArrayStep, TElement } from "../../types/state-types";
 import { animateStates } from "../../utils/animate-state";
+import { useForm } from "../../hooks/useForm";
 
 export const StackPage: React.FC = () => {
-  const [value, setValue] = useState<string>('');
+  const {values, handleChange, setValues} = useForm({value: ""})
   const [stateArray, setStateArray] = useState<TElement[]>([]);
   const [isLoaderPush, setLoaderPush] = useState(false);
   const [isLoaderPop, setLoaderPop] = useState(false);
   const [isLoaderRst, setLoaderRst] = useState(false);
   const stack = useMemo(() => new Stack<TElement>(), []);
 
-  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    event.preventDefault();
-    setValue(event.target.value);
-  }
-
-  const push = (event: React.FormEvent<HTMLFormElement>) => {
+  const push = (event: React.FormEvent<HTMLFormElement>, value: string) => {
     event.preventDefault();
     
     stack.push({value: value, state: ElementStates.Changing});
@@ -32,7 +28,7 @@ export const StackPage: React.FC = () => {
     stack.peek().state = ElementStates.Default
     stepArray = [...stepArray, {array: JSON.parse(JSON.stringify(stack.toArray()))}]
 
-    setValue('');
+    setValues({...values, value:''});
     animateStates(stepArray, setLoaderPush, setStateArray, SHORT_DELAY_IN_MS)
   }
 
@@ -55,9 +51,9 @@ export const StackPage: React.FC = () => {
 
   return (
     <SolutionLayout title="Стек">
-      <form className={styles.control} onSubmit={push}>
-        <Input isLimitText={true} value={value} maxLength={4} onChange={onChange} extraClass={styles.input}/>
-        <Button type={'submit'} isLoader={isLoaderPush} disabled={!value || isLoaderPop || isLoaderRst } text="Добавить"/>
+      <form className={styles.control} onSubmit={e => push(e, values.value)}>
+        <Input isLimitText={true} value={values.value} name={"value"} maxLength={4} onChange={handleChange} extraClass={styles.input}/>
+        <Button type={'submit'} isLoader={isLoaderPush} disabled={!values.value || isLoaderPop || isLoaderRst } text="Добавить"/>
         <Button type={'button'} isLoader={isLoaderPop} disabled={!stateArray.length || isLoaderPush || isLoaderRst } onClick={() => pop()} text="Удалить"/>
         <div className={styles.reset}>
           <Button type={'reset'} isLoader={isLoaderRst} disabled={!stateArray.length || isLoaderPush || isLoaderPop} onClick={reset} text="Очистить"/>
