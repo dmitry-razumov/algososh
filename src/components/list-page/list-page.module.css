@@ -1,0 +1,38 @@
+.grid {
+  display: grid;
+  justify-content: center;
+  grid-template-columns: 204px repeat(4, 175px);
+  gap: 12px;
+}
+
+.doubleBtn {
+  grid-column: span 2;
+}
+
+.array {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin: 120px 0 0;
+  padding: 0;
+}
+
+.element {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+}
+
+.top {
+  position: absolute;
+  top: -70px;
+  left: 12px;
+}
+
+.bottom {
+  position: absolute;
+  bottom: -92px;
+  left: 12px;
+}
