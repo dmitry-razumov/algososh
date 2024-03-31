@@ -11,6 +11,10 @@ export const sortSelection = <A extends TArrayStep<E>, E extends TElementS >(sor
   let sortArray: A[] = [];
   let array: E[] = JSON.parse(JSON.stringify(inArray));
   const { length } = array;
+
+  if (!array.length) {
+    return sortArray;
+  }
   
   sortArray = [{array: JSON.parse(JSON.stringify(array))}] as A[];
 
