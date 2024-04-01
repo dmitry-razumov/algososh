@@ -1,5 +1,6 @@
 
 import { SHORT_DELAY_IN_MS } from "../../src/constants/delays"
+import { CY_CIRCLE_CONTENT } from "../constants/cy-constants"
 
 describe('test fibonacci page', () => {
   beforeEach(() => {
@@ -24,7 +25,7 @@ describe('test fibonacci page', () => {
     })              
     
     cy.tick(SHORT_DELAY_IN_MS*20)
-    cy.get('[class^=circle_content]')
+    cy.get(CY_CIRCLE_CONTENT)
       .should('have.length', 20)
       .each((element, index) => {
         cy.wrap(element).contains(numbers[index])
