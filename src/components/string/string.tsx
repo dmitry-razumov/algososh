@@ -11,6 +11,34 @@ import { TArrayStep, TElement } from "../../types/state-types";
 import { animateStates } from "../../utils/animate-state";
 import { useForm } from "../../hooks/useForm";
 
+const stringToArray = (str: string): TElement[] => {
+  return str.split('')
+  .map(letter => {return { value: letter, state: ElementStates.Default } })
+}
+
+export const reverseArray = (str: string) => {
+  let array = stringToArray(str);
+  let steps: TArrayStep<TElement>[] = [{array: JSON.parse(JSON.stringify(array))}];
+  let start = 0;
+  let end = array.length - 1;
+  while (start < end) {
+    array[start].state = ElementStates.Changing;
+    array[end].state = ElementStates.Changing;
+    steps = [...steps, {array: JSON.parse(JSON.stringify(array))}];
+
+    swap(array, start, end);
+
+    array[start++].state = ElementStates.Modified;
+    array[end--].state = ElementStates.Modified;
+    steps = [...steps, {array: JSON.parse(JSON.stringify(array))}];
+  }
+  if ((start + end) % 2 === 0) {
+    array[end].state = ElementStates.Modified;
+    steps = [...steps, {array: JSON.parse(JSON.stringify(array))}];
+  }
+  return steps;
+}
+
 export const StringComponent: React.FC = () => {
   const [isLoader, setLoader] = useState<boolean>(false);
   const {values, handleChange} = useForm({string: ""})
@@ -19,34 +47,6 @@ export const StringComponent: React.FC = () => {
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     animateStates(reverseArray(values.string), setLoader, setArray, DELAY_IN_MS)
-  }
-
-  const stringToArray = (str: string): TElement[] => {
-    return str.split('')
-    .map(letter => {return { value: letter, state: ElementStates.Default } })
-  }
-
-  const reverseArray = (str: string) => {
-    let array = stringToArray(str);
-    let steps: TArrayStep<TElement>[] = [{array: JSON.parse(JSON.stringify(array))}];
-    let start = 0;
-    let end = array.length - 1;
-    while (start < end) {
-      array[start].state = ElementStates.Changing;
-      array[end].state = ElementStates.Changing;
-      steps = [...steps, {array: JSON.parse(JSON.stringify(array))}];
-
-      swap(array, start, end);
-
-      array[start++].state = ElementStates.Modified;
-      array[end--].state = ElementStates.Modified;
-      steps = [...steps, {array: JSON.parse(JSON.stringify(array))}];
-    }
-    if ((start + end) % 2 === 0) {
-      array[end].state = ElementStates.Modified;
-      steps = [...steps, {array: JSON.parse(JSON.stringify(array))}];
-    }
-    return steps;
   }
 
   return (

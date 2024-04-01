@@ -149,8 +149,8 @@ export const ListPage: React.FC = () => {
     localListArray.splice(index, 0, {value: value, state: ElementStates.Modified, smallElement: null});
     addToStepArray(stepArray, localListArray)
 
-    localListArray[index].state = ElementStates.Default;
     localListArray.forEach(element => {element.state = ElementStates.Default});
+    localListArray.forEach(element => {element.smallElement = null});
     addToStepArray(stepArray, localListArray)
 
     setValues({...values, value: "", index: 0});
